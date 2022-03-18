@@ -31,7 +31,7 @@ public class Robot extends TimedRobot {
   private final VictorSPX rightRear = new VictorSPX(3);
   private final VictorSPX rightFront = new VictorSPX(4);
 
-  private final VictorSPX armLift = new VictorSPX(7);,
+  private final VictorSPX armLift = new VictorSPX(7);
   private final VictorSPX intake = new VictorSPX(0);
 
   private final VictorSPX hanger = new VictorSPX(6);
