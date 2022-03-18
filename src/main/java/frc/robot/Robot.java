@@ -34,17 +34,17 @@ public class Robot extends TimedRobot {
   private final VictorSPX armLift = new VictorSPX(7);
   private final VictorSPX intake = new VictorSPX(0);
 
-  private final VictorSPX hanger = new VictorSPX(6);
-  private final VictorSPX tilter = new VictorSPX(5);
+  private final VictorSPX hanger = new VictorSPX(5);
+  private final VictorSPX tilter = new VictorSPX(6);
 
   private final Joystick js = new Joystick(0);
   private final Timer m_timer = new Timer();
   
 
-  public static Double armspeed = 0.5;
-  public static Double intakespeed = -0.3;
+  public static Double armspeed = 0.55;
+  public static Double intakespeed = -0.40;
   public static Double hangspeed = 0.7;
-  public static double tiltspeed = 0.5;
+  public static double tiltspeed = 0.7;
 
 
   
@@ -94,7 +94,7 @@ public class Robot extends TimedRobot {
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
     // gearbox is constructed, you might have to invert the left side instead.
-    // canMotor0.set(ControlMode.PercentOutput, 0);
+    // canMotor0.set(ControlMode.PercentOutput, 0);dr
   }
 
   /** This function is run once each time the robot ent ers autonomous mode. */
@@ -115,6 +115,28 @@ public class Robot extends TimedRobot {
       canMotor0.set(ControlMode.PercentOutput, 0); // stop robot
     }
     */
+
+    if (m_timer.get() < 3.0) {
+      intake.set(ControlMode.PercentOutput, -intakespeed);
+    } else {
+      intake.set(ControlMode.PercentOutput, 0);
+    }
+
+    if (m_timer.get() > 3.0 && m_timer.get() < 6.0 ) {
+      leftFront.set(ControlMode.PercentOutput, 0.5);
+      leftRear.set(ControlMode.PercentOutput, 0.5);
+  
+      rightFront.set(ControlMode.PercentOutput, -0.5);
+      rightRear.set(ControlMode.PercentOutput, -0.5);
+    } else {
+      leftFront.set(ControlMode.PercentOutput, 0);
+      leftRear.set(ControlMode.PercentOutput, 0);
+  
+      rightFront.set(ControlMode.PercentOutput, 0);
+      rightRear.set(ControlMode.PercentOutput, 0);
+    }
+
+    
   }
 
   /** This function is called once each time the robot enters teleoperated mode. */
@@ -175,10 +197,10 @@ public class Robot extends TimedRobot {
     }
 
     //tilter
-    if(js.getRawButton(1)){
+    if(js.getRawButton(3)){
       tilter.set(ControlMode.PercentOutput, tiltspeed);
     }
-    else if (js.getRawButton(3)){
+    else if (js.getRawButton(1)){
       tilter.set(ControlMode.PercentOutput, -tiltspeed);
     }
     else{
