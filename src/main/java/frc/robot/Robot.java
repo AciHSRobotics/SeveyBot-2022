@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.Joystick;
+// import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 
@@ -8,15 +9,26 @@ import edu.wpi.first.wpilibj.Timer;
 
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.DemandType;
+// import com.ctre.phoenix.motorcontrol.DemandType;
+import com.ctre.phoenix.motorcontrol.InvertType;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.buttons.POVButton;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+/*
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
+import com.ctre.phoenix.motorcontrol.VictorSPXSimCollection;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+*/
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -25,17 +37,31 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * directory.
  */
 public class Robot extends TimedRobot {
+
+  /*
   private final VictorSPX leftRear = new VictorSPX(1);
   private final VictorSPX leftFront = new VictorSPX(2);
 
   private final VictorSPX rightRear = new VictorSPX(3);
   private final VictorSPX rightFront = new VictorSPX(4);
+*/
 
   private final VictorSPX armLift = new VictorSPX(7);
   private final VictorSPX intake = new VictorSPX(0);
 
   private final VictorSPX hanger = new VictorSPX(5);
   private final VictorSPX tilter = new VictorSPX(6);
+
+  WPI_VictorSPX leftRear = new WPI_VictorSPX(1);
+  WPI_VictorSPX leftFront = new WPI_VictorSPX(2);
+
+  WPI_VictorSPX rightRear = new WPI_VictorSPX(3);
+  WPI_VictorSPX rightFront = new WPI_VictorSPX(4);
+
+  MotorControllerGroup rightDrive = new MotorControllerGroup(rightFront, rightRear);
+  MotorControllerGroup leftDrive = new MotorControllerGroup(leftFront, leftRear);
+
+  DifferentialDrive drivetrain = new DifferentialDrive(leftDrive, rightDrive);
 
   private final Joystick js = new Joystick(0);
   private final Timer m_timer = new Timer();
@@ -46,8 +72,6 @@ public class Robot extends TimedRobot {
   public static Double hangspeed = 0.7;
   public static double tiltspeed = 0.7;
 
-
-  
   Button D_Button = new JoystickButton(js, 1);
   Button X_Button = new JoystickButton(js, 2);
   Button O_Button = new JoystickButton(js, 3);
@@ -94,7 +118,19 @@ public class Robot extends TimedRobot {
     // We need to invert one side of the drivetrain so that positive voltages
     // result in both sides moving forward. Depending on how your robot's
     // gearbox is constructed, you might have to invert the left side instead.
-    // canMotor0.set(ControlMode.PercentOutput, 0);dr
+    // canMotor0.set(ControlMode.PercentOutput, 0);
+    
+    /*
+    rightRear.follow(rightFront);
+    rightRear.setInverted(InvertType.FollowMaster);
+
+    leftRear.follow(leftFront);
+    leftRear.setInverted(InvertType.FollowMaster);
+
+    leftFront.setInverted(InvertType.None);
+    rightFront.setInverted(InvertType.InvertMotorOutput);
+    */
+
   }
 
   /** This function is run once each time the robot ent ers autonomous mode. */
@@ -107,14 +143,6 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    /*
-    // Drive for 2 seconds
-    if (m_timer.get() < 2.0) {
-      canMotor0.set(ControlMode.PercentOutput, 0.5); // drive forwards half speed
-    } else {
-      canMotor0.set(ControlMode.PercentOutput, 0); // stop robot
-    }
-    */
 
     if (m_timer.get() < 3.0) {
       intake.set(ControlMode.PercentOutput, -intakespeed);
@@ -145,6 +173,15 @@ public class Robot extends TimedRobot {
       armLift.setNeutralMode(NeutralMode.Brake);
       hanger.setNeutralMode(NeutralMode.Brake);
 
+      leftFront.setInverted(InvertType.None);
+      rightFront.setInverted(InvertType.InvertMotorOutput);
+      
+      rightRear.follow(rightFront);
+      rightRear.setInverted(InvertType.FollowMaster);
+  
+      leftRear.follow(leftFront);
+      leftRear.setInverted(InvertType.FollowMaster);
+      
   }
 
   /** This function is called periodically during teleoperated mode. */
@@ -156,12 +193,9 @@ public class Robot extends TimedRobot {
 		forward = Deadband(forward);
 		turn = Deadband(turn);
 
-		/* Arcade Drive using PercentOutput along with Arbitrary Feed Forward supplied by turn */
-		leftFront.set(ControlMode.PercentOutput, forward, DemandType.ArbitraryFeedForward, +turn/1.8);
-		leftRear.set(ControlMode.PercentOutput, forward, DemandType.ArbitraryFeedForward, +turn/1.8);
+    // left positive, right negative
 
-    rightFront.set(ControlMode.PercentOutput, -forward, DemandType.ArbitraryFeedForward, +turn/1.8);
-		rightRear.set(ControlMode.PercentOutput, -forward, DemandType.ArbitraryFeedForward, +turn/1.8);
+    drivetrain.arcadeDrive(forward, turn);
 
     //arm
     if(js.getRawButton(5)){
@@ -207,9 +241,6 @@ public class Robot extends TimedRobot {
       tilter.set(ControlMode.PercentOutput, 0);
     }
 
-
-
-
   }
   
   /** This function is called once each time the robot enters test mode. */
@@ -232,5 +263,18 @@ public class Robot extends TimedRobot {
 		/* Outside deadband */
 		return 0;
 	}
-  
+
+  /*
+  @Override
+  public void simulationPeriodic() {
+    leftDriveSim.setBusVoltage(RobotController.getBatteryVoltage());
+    rightDriveSim.setBusVoltage(RobotController.getBatteryVoltage());
+
+    m_driveSim.setInputs(leftDriveSim.getMotorOutputLeadVoltage(),
+                          rightDriveSim.getMotorOutputLeadVoltage());
+
+    m_driveSim.update(0.02);
+
+  }
+  */
 }
