@@ -122,7 +122,7 @@ public class Robot extends TimedRobot {
       intake.set(ControlMode.PercentOutput, 0);
     }
 
-    if (m_timer.get() > 3.0 && m_timer.get() < 6.0 ) {
+    if (m_timer.get() > 3.0 && m_timer.get() < 5.0 ) {
       leftFront.set(ControlMode.PercentOutput, 0.5);
       leftRear.set(ControlMode.PercentOutput, 0.5);
   
